@@ -1,0 +1,244 @@
+// Prisma schema for ASTU PC Management backend
+// Datasource points to Neon PostgreSQL via DATABASE_URL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// NOTE (Prisma 7): Connection URLs are configured in prisma.config.ts or
+// when instantiating PrismaClient (see https://pris.ly/d/config-datasource).
+//
+// This schema defines models that match your existing PostgreSQL tables in
+// db-schema.sql, using only scalar fields (no explicit relations) to keep
+// validation simple and compatible with the current database.
+
+model users {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username               String    @unique @db.VarChar(50)
+  email                  String    @unique @db.VarChar(255)
+  password_hash          String    @db.Text
+  role                   String    @db.VarChar(20)
+  full_name              String?   @db.VarChar(255)
+  department             String?   @db.VarChar(100)
+  phone                  String?   @db.VarChar(50)
+  created_at             DateTime  @default(now()) @db.Timestamptz
+  last_login_at          DateTime? @db.Timestamptz
+  last_login_ip          String?   @db.VarChar(64)
+  login_count            Int       @default(0)
+  is_active              Boolean   @default(true)
+  failed_login_attempts  Int       @default(0)
+  last_failed_login_at   DateTime? @db.Timestamptz
+  locked_until           DateTime? @db.Timestamptz
+  created_by_user_id     String?   @db.Uuid
+  updated_by_user_id     String?   @db.Uuid
+  deactivated_at         DateTime? @db.Timestamptz
+  deactivation_reason    String?
+  deactivated_by_user_id String?   @db.Uuid
+}
+
+model password_reset_tokens {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @db.Uuid
+  token_hash        String   @db.Text
+  expires_at        DateTime @db.Timestamptz
+  used_at           DateTime? @db.Timestamptz
+  created_at        DateTime @default(now()) @db.Timestamptz
+  created_by_user_id String? @db.Uuid
+}
+
+model user_sessions {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String   @db.Uuid
+  token       String   @unique
+  expires_at  DateTime? @db.Timestamptz
+  ip_address  String?  @db.VarChar(64)
+  user_agent  String?
+  created_at  DateTime @default(now()) @db.Timestamptz
+  revoked_at  DateTime? @db.Timestamptz
+}
+
+model students {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  student_id        String   @unique @db.VarChar(50)
+  full_name         String   @db.VarChar(255)
+  year_of_entry     Int
+  gender            String?  @db.VarChar(20)
+  department        String   @db.VarChar(100)
+  email             String?  @db.VarChar(255)
+  phone             String?  @db.VarChar(50)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz
+  updated_at        DateTime? @db.Timestamptz
+  created_by_user_id String? @db.Uuid
+  updated_by_user_id String? @db.Uuid
+}
+
+model student_audit_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  student_id        String?  @db.Uuid
+  action            String   @db.VarChar(20)
+  before_data       Json?
+  after_data        Json?
+  changed_by_user_id String? @db.Uuid
+  created_at        DateTime @default(now()) @db.Timestamptz
+}
+
+model laptops {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  student_id       String   @db.Uuid
+  brand            String   @db.VarChar(100)
+  model            String   @db.VarChar(100)
+  serial_number    String   @unique @db.VarChar(100)
+  mac_address      String?  @db.VarChar(50)
+  color            String?  @db.VarChar(50)
+  purchase_year    Int?
+  notes            String?
+  created_at       DateTime @default(now()) @db.Timestamptz
+  updated_at       DateTime? @db.Timestamptz
+  created_by_user_id String? @db.Uuid
+  updated_by_user_id String? @db.Uuid
+}
+
+model laptop_images {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  laptop_id           String   @db.Uuid
+  image_type          String   @db.VarChar(20)
+  cloudinary_public_id String  @db.Text
+  cloudinary_url      String   @db.Text
+  is_primary          Boolean  @default(false)
+  uploaded_by_user_id String?  @db.Uuid
+  created_at          DateTime @default(now()) @db.Timestamptz
+}
+
+model scan_logs {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  student_id        String?  @db.Uuid
+  scanned_student_id String  @db.VarChar(50)
+  student_name      String?  @db.VarChar(255)
+  scan_type         String?  @db.VarChar(20)
+  status            String   @db.VarChar(20)
+  scanner_type      String?  @db.VarChar(50)
+  gate_location     String?  @db.VarChar(100)
+  scanned_by_user_id String? @db.Uuid
+  alert_generated   Boolean  @default(false)
+  alert_id          String?  @db.Uuid
+  ip_address        String?  @db.VarChar(64)
+  user_agent        String?
+  response_time_ms  Int?
+  request_payload   Json?
+  created_at        DateTime @default(now()) @db.Timestamptz
+}
+
+model alerts {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type              String   @db.VarChar(30)
+  scanned_student_id String  @db.VarChar(50)
+  student_id        String?  @db.Uuid
+  scan_log_id       String?  @db.Uuid
+  message           String?
+  severity          String   @db.VarChar(10)
+  status            String   @db.VarChar(20)
+  gate_location     String?  @db.VarChar(100)
+  repeat_count      Int      @default(1)
+  created_by_user_id String? @db.Uuid
+  resolver_user_id   String? @db.Uuid
+  resolution_notes   String?
+  created_at        DateTime @default(now()) @db.Timestamptz
+  resolved_at       DateTime? @db.Timestamptz
+}
+
+model alert_history {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alert_id          String   @db.Uuid
+  old_status        String?  @db.VarChar(20)
+  new_status        String   @db.VarChar(20)
+  changed_by_user_id String? @db.Uuid
+  notes             String?
+  created_at        DateTime @default(now()) @db.Timestamptz
+}
+
+model daily_scan_statistics {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date               DateTime @unique @db.Date
+  total_scans        Int
+  registered_scans   Int
+  unregistered_scans Int
+  no_laptop_scans    Int
+  alerts_generated   Int
+  peak_hour          Int?
+  busiest_gate       String?  @db.VarChar(100)
+  created_at         DateTime @default(now()) @db.Timestamptz
+  updated_at         DateTime @default(now()) @db.Timestamptz
+}
+
+model cached_dashboard_metrics {
+  key         String   @id @db.VarChar(100)
+  payload     Json
+  valid_until DateTime @db.Timestamptz
+  created_at  DateTime @default(now()) @db.Timestamptz
+  updated_at  DateTime @default(now()) @db.Timestamptz
+}
+
+model audit_logs {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at       DateTime @default(now()) @db.Timestamptz
+  user_id          String?  @db.Uuid
+  username         String?  @db.VarChar(50)
+  user_role        String?  @db.VarChar(20)
+  ip_address       String?  @db.VarChar(64)
+  user_agent       String?
+  action           String   @db.VarChar(30)
+  entity_type      String   @db.VarChar(30)
+  entity_id        String?  @db.Uuid
+  entity_identifier String? @db.VarChar(255)
+  old_data         Json?
+  new_data         Json?
+  description      String?
+}
+
+model system_settings {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key               String   @unique @db.VarChar(150)
+  value             Json
+  description       String?
+  data_type         String?  @db.VarChar(50)
+  updated_at        DateTime @default(now()) @db.Timestamptz
+  updated_by_user_id String? @db.Uuid
+}
+
+model departments {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String   @db.VarChar(255)
+  code              String   @unique @db.VarChar(50)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz
+  updated_at        DateTime? @db.Timestamptz
+  created_by_user_id String? @db.Uuid
+  updated_by_user_id String? @db.Uuid
+}
+
+model gates {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String   @db.VarChar(100)
+  location          String?  @db.VarChar(255)
+  scanner_type      String   @db.VarChar(20)
+  ip_address        String?  @db.VarChar(64)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now()) @db.Timestamptz
+  updated_at        DateTime? @db.Timestamptz
+  created_by_user_id String? @db.Uuid
+}
+
+model backup_history {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type                String   @db.VarChar(20)
+  status              String   @db.VarChar(20)
+  triggered_by_user_id String? @db.Uuid
+  triggered_at        DateTime @default(now()) @db.Timestamptz
+  completed_at        DateTime? @db.Timestamptz
+  details             Json?
+}
