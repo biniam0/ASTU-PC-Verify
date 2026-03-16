@@ -35,7 +35,7 @@ export function LoginPage() {
     <div className="w-full max-w-sm flex flex-col items-center">
       {/* Logo */}
       <img
-        src="/logo.svg"
+        src="/logo.jpg"
         alt="ASTU"
         className="h-28 w-28 object-contain"
       />

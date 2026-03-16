@@ -1,9 +1,9 @@
 export function HomePage() {
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900">Welcome</h2>
+      <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
       <p className="mt-2 text-gray-600">
-        ASTU PC Verify frontend is set up with React, Vite, and Tailwind.
+        Welcome to ASTU PC Management. Use the sidebar to register students and laptops, manage records, or run verification.
       </p>
     </div>
   )

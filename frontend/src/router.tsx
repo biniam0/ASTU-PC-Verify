@@ -1,9 +1,14 @@
 import type { RouteObject } from 'react-router-dom'
 import { AuthLayout } from '@/layouts/AuthLayout'
-import { MainLayout } from '@/layouts/MainLayout'
+import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { ForgotPasswordPage } from '@/pages/Auth/ForgotPasswordPage'
 import { LoginPage } from '@/pages/Auth/LoginPage'
 import { HomePage } from '@/pages/Home'
+import { ManageLaptopsPage } from '@/pages/dashboard/ManageLaptopsPage'
+import { ManageStudentsPage } from '@/pages/dashboard/ManageStudentsPage'
+import { RegisterLaptopPage } from '@/pages/dashboard/RegisterLaptopPage'
+import { RegisterStudentPage } from '@/pages/dashboard/RegisterStudentPage'
+import { VerificationPage } from '@/pages/dashboard/VerificationPage'
 
 export const routes: RouteObject[] = [
   {
@@ -18,11 +23,14 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/',
-    element: <MainLayout />,
+    element: <DashboardLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      // Add more routes here, e.g.:
-      // { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'register-student', element: <RegisterStudentPage /> },
+      { path: 'register-laptop', element: <RegisterLaptopPage /> },
+      { path: 'manage-students', element: <ManageStudentsPage /> },
+      { path: 'manage-laptops', element: <ManageLaptopsPage /> },
+      { path: 'verification', element: <VerificationPage /> },
     ],
   },
 ]
