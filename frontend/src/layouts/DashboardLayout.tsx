@@ -62,7 +62,7 @@ export function DashboardLayout() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <img src="/logo.svg" alt="ASTU" className="h-10 w-10 shrink-0 rounded-full object-contain" />
+        <img src="/logo.jpg" alt="ASTU" className="h-10 w-10 shrink-0 rounded-full object-contain" />
         <div className="flex-1" />
         <button
           type="button"
