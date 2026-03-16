@@ -1,5 +1,7 @@
 import express from "express";
 import { authRequired, requireRole } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validation.middleware.js";
+import { authValidations } from "../middleware/validation.middleware.js";
 import {
   registerUser,
   loginUser,
@@ -21,63 +23,50 @@ function extractClientInfo(req) {
 }
 
 // POST /api/auth/bootstrap-admin (Public, only when no users exist)
-authRouter.post("/bootstrap-admin", async (req, res) => {
-  try {
-    const totalUsers = await getTotalUserCount();
-    if (totalUsers > 0) {
-      return res.status(400).json({
-        message: "Bootstrap admin not allowed: users already exist",
+authRouter.post(
+  "/bootstrap-admin",
+  validate(authValidations.bootstrapAdmin),
+  async (req, res) => {
+    try {
+      const totalUsers = await getTotalUserCount();
+      if (totalUsers > 0) {
+        return res.status(400).json({
+          message: "Bootstrap admin not allowed: users already exist",
+        });
+      }
+
+      const { username, email, password, fullName } = req.body;
+
+      const user = await registerUser({
+        username,
+        email,
+        password,
+        role: "admin",
+        fullName,
       });
-    }
 
-    const { username, email, password, fullName } = req.body;
-
-    if (!username || !email || !password) {
-      return res.status(400).json({
-        message: "username, email, and password are required",
+      return res.status(201).json({
+        message: "Initial admin user created",
+        user,
       });
+    } catch (err) {
+      console.error("bootstrap-admin error", err);
+      res
+        .status(err.status || 500)
+        .json({ message: err.message || "Bootstrap admin failed" });
     }
-
-    const user = await registerUser({
-      username,
-      email,
-      password,
-      role: "admin",
-      fullName,
-    });
-
-    return res.status(201).json({
-      message: "Initial admin user created",
-      user,
-    });
-  } catch (err) {
-    console.error("bootstrap-admin error", err);
-    res
-      .status(err.status || 500)
-      .json({ message: err.message || "Bootstrap admin failed" });
-  }
-});
+  },
+);
 
 // POST /api/auth/register (Admin only)
 authRouter.post(
   "/register",
   authRequired,
   requireRole("admin"),
+  validate(authValidations.register),
   async (req, res) => {
     try {
       const { username, email, password, role, fullName } = req.body;
-
-      if (!username || !email || !password || !role) {
-        return res.status(400).json({
-          message: "username, email, password, and role are required",
-        });
-      }
-
-      if (!["admin", "security"].includes(role)) {
-        return res
-          .status(400)
-          .json({ message: "Invalid role. Must be admin or security." });
-      }
 
       const user = await registerUser({
         username,
@@ -97,42 +86,41 @@ authRouter.post(
 );
 
 // POST /api/auth/login (Public)
-authRouter.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "email and password are required" });
+authRouter.post(
+  "/login",
+  validate(authValidations.login),
+  async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      const { ipAddress, userAgent } = extractClientInfo(req);
+      const result = await loginUser({ email, password, ipAddress, userAgent });
+
+      // Successful login audit
+      await recordAuditEvent({
+        req,
+        action: "LOGIN",
+        entityType: "user",
+        entityId: result.user.id,
+        entityIdentifier: result.user.username,
+        oldData: null,
+        newData: {
+          userId: result.user.id,
+          username: result.user.username,
+          role: result.user.role,
+        },
+        description: `User ${result.user.username} logged in successfully`,
+      });
+
+      res.json(result);
+    } catch (err) {
+      console.error("login error", err);
+      res
+        .status(err.status || 500)
+        .json({ message: err.message || "Login failed" });
     }
-
-    const { ipAddress, userAgent } = extractClientInfo(req);
-    const result = await loginUser({ email, password, ipAddress, userAgent });
-
-    // Successful login audit
-    await recordAuditEvent({
-      req,
-      action: "LOGIN",
-      entityType: "user",
-      entityId: result.user.id,
-      entityIdentifier: result.user.username,
-      oldData: null,
-      newData: {
-        userId: result.user.id,
-        username: result.user.username,
-        role: result.user.role,
-      },
-      description: `User ${result.user.username} logged in successfully`,
-    });
-
-    res.json(result);
-  } catch (err) {
-    console.error("login error", err);
-    res
-      .status(err.status || 500)
-      .json({ message: err.message || "Login failed" });
-  }
-});
+  },
+);
 
 // POST /api/auth/logout (Authenticated)
 authRouter.post("/logout", authRequired, async (req, res) => {
@@ -192,27 +180,26 @@ authRouter.get("/profile", authRequired, async (req, res) => {
 });
 
 // PUT /api/auth/change-password (Authenticated)
-authRouter.put("/change-password", authRequired, async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
+authRouter.put(
+  "/change-password",
+  authRequired,
+  validate(authValidations.changePassword),
+  async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
-      return res
-        .status(400)
-        .json({ message: "currentPassword and newPassword are required" });
+      await changeUserPassword({
+        userId: req.user.id,
+        currentPassword,
+        newPassword,
+      });
+
+      res.json({ message: "Password updated successfully" });
+    } catch (err) {
+      console.error("change-password error", err);
+      res
+        .status(err.status || 500)
+        .json({ message: err.message || "Failed to change password" });
     }
-
-    await changeUserPassword({
-      userId: req.user.id,
-      currentPassword,
-      newPassword,
-    });
-
-    res.json({ message: "Password updated successfully" });
-  } catch (err) {
-    console.error("change-password error", err);
-    res
-      .status(err.status || 500)
-      .json({ message: err.message || "Failed to change password" });
-  }
-});
+  },
+);

@@ -1,5 +1,7 @@
 import express from "express";
 import { authRequired, requireAnyRole } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validation.middleware.js";
+import { verificationValidations } from "../middleware/validation.middleware.js";
 import {
   verifyStudentId,
   quickVerificationCheck,
@@ -20,14 +22,10 @@ verificationRouter.post(
   "/scan",
   authRequired,
   requireAnyRole(["security", "admin"]),
+  validate(verificationValidations.scan),
   async (req, res) => {
     try {
-      const { studentId } = req.body || {};
-      if (!studentId) {
-        return res
-          .status(400)
-          .json({ message: "studentId is required for verification" });
-      }
+      const { studentId } = req.body;
 
       const meta = getScannerMeta(req);
       const result = await verifyStudentId({
@@ -53,14 +51,10 @@ verificationRouter.post(
   "/manual",
   authRequired,
   requireAnyRole(["security", "admin"]),
+  validate(verificationValidations.scan),
   async (req, res) => {
     try {
-      const { studentId, gateLocation } = req.body || {};
-      if (!studentId) {
-        return res
-          .status(400)
-          .json({ message: "studentId is required for verification" });
-      }
+      const { studentId, gateLocation } = req.body;
 
       const result = await verifyStudentId({
         studentId,
@@ -85,6 +79,7 @@ verificationRouter.get(
   "/check/:studentId",
   authRequired,
   requireAnyRole(["security", "admin"]),
+  validate(verificationValidations.check),
   async (req, res) => {
     try {
       const { studentId } = req.params;

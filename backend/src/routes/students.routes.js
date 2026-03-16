@@ -4,6 +4,8 @@ import {
   requireRole,
   requireAnyRole,
 } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validation.middleware.js";
+import { studentValidations } from "../middleware/validation.middleware.js";
 import {
   registerStudent,
   getStudentByStudentId,
@@ -21,6 +23,7 @@ studentsRouter.post(
   "/",
   authRequired,
   requireRole("admin"),
+  validate(studentValidations.register),
   async (req, res) => {
     try {
       const {
@@ -33,19 +36,10 @@ studentsRouter.post(
         phone,
       } = req.body;
 
-      if (!studentId || !fullName || !yearOfEntry || !department) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "studentId, fullName, yearOfEntry, and department are required",
-          });
-      }
-
       const student = await registerStudent({
         studentId,
         fullName,
-        yearOfEntry,
+        yearOfEntry: parseInt(yearOfEntry),
         gender,
         department,
         email,
@@ -68,6 +62,7 @@ studentsRouter.get(
   "/",
   authRequired,
   requireAnyRole(["admin", "security"]),
+  validate(studentValidations.list),
   async (req, res) => {
     try {
       const {
@@ -81,11 +76,11 @@ studentsRouter.get(
       } = req.query;
 
       const result = await listStudentsPaged({
-        page,
-        limit,
+        page: page ? parseInt(page) : 1,
+        limit: limit ? parseInt(limit) : 20,
         department,
-        yearOfEntry,
-        isActive,
+        yearOfEntry: yearOfEntry ? parseInt(yearOfEntry) : undefined,
+        isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
         sortBy,
         sortOrder,
       });
@@ -105,6 +100,7 @@ studentsRouter.get(
   "/:studentId",
   authRequired,
   requireAnyRole(["admin", "security"]),
+  validate(studentValidations.getByStudentId),
   async (req, res) => {
     try {
       const { studentId } = req.params;
@@ -124,6 +120,7 @@ studentsRouter.put(
   "/:studentId",
   authRequired,
   requireRole("admin"),
+  validate(studentValidations.update),
   async (req, res) => {
     try {
       const { studentId } = req.params;
@@ -133,7 +130,7 @@ studentsRouter.put(
       const updated = await updateStudentInfo({
         studentId,
         fullName,
-        yearOfEntry,
+        yearOfEntry: yearOfEntry ? parseInt(yearOfEntry) : undefined,
         gender,
         department,
         email,
@@ -156,6 +153,7 @@ studentsRouter.delete(
   "/:studentId",
   authRequired,
   requireRole("admin"),
+  validate(studentValidations.getByStudentId),
   async (req, res) => {
     try {
       const { studentId } = req.params;
@@ -178,11 +176,12 @@ studentsRouter.delete(
   },
 );
 
-// GET /api/students/search - Search by name, department, year (Admin, Security)
+// GET /api/students/search/by - Search by name, department, year (Admin, Security)
 studentsRouter.get(
   "/search/by",
   authRequired,
   requireAnyRole(["admin", "security"]),
+  validate(studentValidations.search),
   async (req, res) => {
     try {
       const { q, department, yearOfEntry, page, limit } = req.query;
@@ -190,9 +189,9 @@ studentsRouter.get(
       const result = await searchStudentsPaged({
         q,
         department,
-        yearOfEntry,
-        page,
-        limit,
+        yearOfEntry: yearOfEntry ? parseInt(yearOfEntry) : undefined,
+        page: page ? parseInt(page) : 1,
+        limit: limit ? parseInt(limit) : 20,
       });
       res.json(result);
     } catch (err) {
