@@ -13,6 +13,12 @@ export interface RegisterLaptopPayload {
 
 export interface Laptop extends Omit<RegisterLaptopPayload, 'frontView' | 'backView' | 'serialNumberImage' | 'macAddressScreen'> {
   id: string
+  /** Display id for list (e.g. LPT/001) */
+  laptopId?: string
+  /** List/table: "Available" | "Assigned" */
+  status?: 'Available' | 'Assigned'
+  /** List/table: student name when assigned */
+  assignedTo?: string
   frontViewUrl?: string
   backViewUrl?: string
   serialNumberImageUrl?: string
