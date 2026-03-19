@@ -1,15 +1,9 @@
 import type { SVGProps } from 'react'
-import { useState, useEffect, type FormEvent } from 'react'
-import {
-  getVerificationStats,
-  getVerificationLogs,
-  verifyByStudentId,
-} from '@/services/verificationService'
-import type {
-  VerificationLogEntry,
-  VerificationResult,
-  VerificationStats,
-} from '@/types/verification'
+import { useState, useEffect, useRef, useCallback, type FormEvent } from 'react'
+import { BarcodeCameraModal } from '@/components/BarcodeCameraModal'
+import { getVerificationStats, verifyByStudentId } from '@/services/verificationService'
+import { normalizeScannedId } from '@/utils/normalizeScannedId'
+import type { VerificationResult, VerificationStats } from '@/types/verification'
 
 const MOCK_STATS: VerificationStats = {
   totalScan: 100,
@@ -18,7 +12,7 @@ const MOCK_STATS: VerificationStats = {
 }
 
 const INSTRUCTIONS = [
-  'Scan or manually enter the student ID',
+  'Use Scan ID to open the camera and read a barcode/QR on the student ID, or type the ID and tap Verify',
   'Review the displayed laptop information',
   'Physically verify the laptop matches the registered details',
   'Check serial number and physical appearance',
@@ -46,28 +40,28 @@ function ScanIcon({ className }: { className?: string }) {
 }
 
 export function SecurityVerificationPage() {
+  const formRef = useRef<HTMLFormElement>(null)
+  const studentIdInputRef = useRef<HTMLInputElement>(null)
   const [stats, setStats] = useState<VerificationStats>(MOCK_STATS)
-  const [logs, setLogs] = useState<VerificationLogEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [studentId, setStudentId] = useState('')
   const [result, setResult] = useState<VerificationResult | null>(null)
   const [scanning, setScanning] = useState(false)
   const [scanError, setScanError] = useState<string | null>(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    Promise.all([getVerificationStats(), getVerificationLogs()])
-      .then(([statsData, logsData]) => {
+    getVerificationStats()
+      .then((statsData) => {
         if (!cancelled) {
           setStats(statsData ?? MOCK_STATS)
-          setLogs(Array.isArray(logsData) ? logsData : [])
         }
       })
       .catch(() => {
         if (!cancelled) {
           setStats(MOCK_STATS)
-          setLogs([])
         }
       })
       .finally(() => {
@@ -78,27 +72,47 @@ export function SecurityVerificationPage() {
     }
   }, [])
 
-  async function handleScan(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  const verifyWithId = useCallback(async (id: string) => {
+    const trimmed = id.trim()
     setScanError(null)
     setResult(null)
-    if (!studentId.trim()) {
+    if (!trimmed) {
       setScanError('Enter a student ID.')
       return
     }
     setScanning(true)
     try {
-      const data = await verifyByStudentId(studentId.trim())
+      const data = await verifyByStudentId(trimmed)
       setResult(data)
     } catch (err) {
       setResult({
         success: false,
-        studentId: studentId.trim(),
+        studentId: trimmed,
         message: err instanceof Error ? err.message : 'Verification failed. Student may not be registered or has no laptop.',
       })
     } finally {
       setScanning(false)
     }
+  }, [])
+
+  const handleCameraDecoded = useCallback(
+    (raw: string) => {
+      const id = normalizeScannedId(raw)
+      if (!id) {
+        setScanError('Could not read a student ID from the scanned code.')
+        setCameraOpen(false)
+        return
+      }
+      setStudentId(id)
+      setCameraOpen(false)
+      void verifyWithId(id)
+    },
+    [verifyWithId],
+  )
+
+  function handleScan(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    void verifyWithId(studentId.trim())
   }
 
   return (
@@ -131,12 +145,13 @@ export function SecurityVerificationPage() {
           <p className="mt-1 text-sm text-gray-600">
             Enter or scan the student ID to verify laptop ownership
           </p>
-          <form onSubmit={handleScan} className="mt-4 flex flex-wrap items-end gap-3">
+          <form ref={formRef} onSubmit={handleScan} className="mt-4 flex flex-wrap items-end gap-3">
             <div className="min-w-0 flex-1">
               <label htmlFor="scan-student-id" className="mb-1 block text-sm font-medium text-gray-700">
                 Student ID
               </label>
               <input
+                ref={studentIdInputRef}
                 id="scan-student-id"
                 type="text"
                 placeholder="e.g. ASTU/2024/001"
@@ -145,8 +160,18 @@ export function SecurityVerificationPage() {
                 aria-label="Student ID for verification"
                 className="w-full rounded-full border border-gray-300 bg-gray-100 px-4 py-2.5 text-gray-900 placeholder-gray-500 outline-none transition focus:border-teal-500 focus:bg-white focus:ring-1 focus:ring-teal-500"
                 disabled={scanning}
+                autoComplete="off"
               />
             </div>
+            <button
+              type="button"
+              disabled={scanning}
+              onClick={() => setCameraOpen(true)}
+              className="rounded-full border border-teal-600 bg-teal-600 px-5 py-2.5 font-medium text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label="Open camera to scan student ID barcode or QR code"
+            >
+              Scan ID
+            </button>
             <button
               type="submit"
               disabled={scanning}
@@ -154,9 +179,29 @@ export function SecurityVerificationPage() {
             >
               {scanning ? 'Verifying…' : 'Verify'}
             </button>
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500" aria-hidden>
-              <ScanIcon className="h-5 w-5" />
-            </span>
+            <button
+              type="button"
+              disabled={scanning}
+              title="Focus field for barcode scanner, or verify if ID is already entered"
+              aria-label={
+                studentId.trim()
+                  ? 'Verify entered student ID'
+                  : 'Focus student ID field for scanning'
+              }
+              onClick={() => {
+                if (scanning) return
+                const id = studentId.trim()
+                if (!id) {
+                  studentIdInputRef.current?.focus()
+                  studentIdInputRef.current?.select()
+                  return
+                }
+                formRef.current?.requestSubmit()
+              }}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-gray-600 transition hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <ScanIcon className="h-5 w-5 shrink-0" aria-hidden />
+            </button>
           </form>
           {scanError && <p className="mt-2 text-sm text-red-600">{scanError}</p>}
           {result && (
@@ -195,6 +240,12 @@ export function SecurityVerificationPage() {
           </ol>
         </div>
       </div>
+
+      <BarcodeCameraModal
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onDecoded={handleCameraDecoded}
+      />
     </div>
   )
 }
