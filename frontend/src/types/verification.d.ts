@@ -13,3 +13,18 @@ export interface VerificationLogEntry {
   result: 'verified' | 'alert'
   message?: string
 }
+
+/** Result of scanning a student ID (SRS 3.1.4) */
+export interface VerificationResult {
+  success: boolean
+  studentId: string
+  studentName?: string
+  department?: string
+  laptop?: {
+    brandName: string
+    model: string
+    serialNumber: string
+    laptopId?: string
+  }
+  message?: string
+}

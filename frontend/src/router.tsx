@@ -12,7 +12,7 @@ import { ProfilePage } from '@/pages/dashboard/ProfilePage'
 import { SettingsPage } from '@/pages/dashboard/SettingsPage'
 import { RegisterLaptopPage } from '@/pages/dashboard/RegisterLaptopPage'
 import { RegisterStudentPage } from '@/pages/dashboard/RegisterStudentPage'
-import { VerificationPage } from '@/pages/dashboard/VerificationPage'
+import { SecurityVerificationPage } from '@/pages/dashboard/SecurityVerificationPage'
 
 export const routes: RouteObject[] = [
   {
@@ -36,7 +36,7 @@ export const routes: RouteObject[] = [
       { path: 'students/:id/edit', element: <EditStudentPage /> },
       { path: 'manage-laptops', element: <ManageLaptopsPage /> },
       { path: 'laptops/:id/edit', element: <EditLaptopPage /> },
-      { path: 'verification', element: <VerificationPage /> },
+      { path: 'security-verification', element: <SecurityVerificationPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
