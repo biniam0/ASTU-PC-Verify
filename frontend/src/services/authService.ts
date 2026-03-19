@@ -17,3 +17,11 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
     body: JSON.stringify(credentials),
   })
 }
+
+/** Request password reset. Backend: POST /auth/forgot-password */
+export async function requestPasswordReset(email: string): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}

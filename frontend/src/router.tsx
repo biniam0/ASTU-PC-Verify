@@ -8,6 +8,8 @@ import { EditLaptopPage } from '@/pages/dashboard/EditLaptopPage'
 import { EditStudentPage } from '@/pages/dashboard/EditStudentPage'
 import { ManageLaptopsPage } from '@/pages/dashboard/ManageLaptopsPage'
 import { ManageStudentsPage } from '@/pages/dashboard/ManageStudentsPage'
+import { ProfilePage } from '@/pages/dashboard/ProfilePage'
+import { SettingsPage } from '@/pages/dashboard/SettingsPage'
 import { RegisterLaptopPage } from '@/pages/dashboard/RegisterLaptopPage'
 import { RegisterStudentPage } from '@/pages/dashboard/RegisterStudentPage'
 import { VerificationPage } from '@/pages/dashboard/VerificationPage'
@@ -35,6 +37,8 @@ export const routes: RouteObject[] = [
       { path: 'manage-laptops', element: <ManageLaptopsPage /> },
       { path: 'laptops/:id/edit', element: <EditLaptopPage /> },
       { path: 'verification', element: <VerificationPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'settings', element: <SettingsPage /> },
     ],
   },
 ]
