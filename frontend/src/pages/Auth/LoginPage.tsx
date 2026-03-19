@@ -33,12 +33,14 @@ export function LoginPage() {
 
   return (
     <div className="w-full max-w-sm flex flex-col items-center">
-      {/* Logo */}
-      <img
-        src="/logo.jpg"
-        alt="ASTU"
-        className="h-28 w-28 object-contain"
-      />
+      {/* Logo – circular clip to remove white corners */}
+      <div className="h-28 w-28 overflow-hidden rounded-full bg-transparent">
+        <img
+          src="/logo.jpg"
+          alt="ASTU"
+          className="h-full w-full object-contain"
+        />
+      </div>
       {/* System title */}
       <h1 className="mt-4 text-center text-gray-800">
         <span className="font-bold">ASTU</span>{' '}
