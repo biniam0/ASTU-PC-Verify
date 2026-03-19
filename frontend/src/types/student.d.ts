@@ -10,4 +10,6 @@ export interface RegisterStudentPayload {
 export interface Student extends RegisterStudentPayload {
   id: string
   createdAt?: string
+  /** For list/table: e.g. "Registered" | "Not Registered" */
+  laptopStatus?: string
 }

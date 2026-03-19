@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { ForgotPasswordPage } from '@/pages/Auth/ForgotPasswordPage'
 import { LoginPage } from '@/pages/Auth/LoginPage'
 import { HomePage } from '@/pages/Home'
+import { EditStudentPage } from '@/pages/dashboard/EditStudentPage'
 import { ManageLaptopsPage } from '@/pages/dashboard/ManageLaptopsPage'
 import { ManageStudentsPage } from '@/pages/dashboard/ManageStudentsPage'
 import { RegisterLaptopPage } from '@/pages/dashboard/RegisterLaptopPage'
@@ -29,6 +30,7 @@ export const routes: RouteObject[] = [
       { path: 'register-student', element: <RegisterStudentPage /> },
       { path: 'register-laptop', element: <RegisterLaptopPage /> },
       { path: 'manage-students', element: <ManageStudentsPage /> },
+      { path: 'students/:id/edit', element: <EditStudentPage /> },
       { path: 'manage-laptops', element: <ManageLaptopsPage /> },
       { path: 'verification', element: <VerificationPage /> },
     ],
