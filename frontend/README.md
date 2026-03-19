@@ -52,3 +52,5 @@ Create `.env` in `frontend/` for API URL:
 ```
 VITE_API_URL=http://localhost:3000/api
 ```
+
+End

@@ -6,7 +6,7 @@ const navItems = [
   { to: '/register-laptop', label: 'Register Laptop', icon: LaptopIcon },
   { to: '/manage-students', label: 'Manage Students', icon: PeopleIcon },
   { to: '/manage-laptops', label: 'Manage laptops', icon: MonitorIcon },
-  { to: '/verification', label: 'Verification', icon: ShieldCheckIcon },
+  { to: '/verification', label: 'Verification', icon: ShieldCheckIcon }, 
 ] as const
 
 function PersonIcon({ className }: { className?: string }) {
