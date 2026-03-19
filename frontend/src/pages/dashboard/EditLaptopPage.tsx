@@ -73,7 +73,7 @@ export function EditLaptopPage() {
         brandName: brandName.trim(),
         model: model.trim(),
         serialNumber: serialNumber.trim(),
-        studentId: studentId.trim() || undefined,
+        studentId: studentId.trim(),
         macAddress: macAddress.trim() || undefined,
       })
       navigate('/manage-laptops', { replace: true })
