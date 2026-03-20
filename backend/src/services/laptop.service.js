@@ -9,6 +9,7 @@ import {
 import { findStudentByStudentId } from "../models/student.model.js";
 import { listImagesForLaptopRaw } from "../models/laptopImage.model.js";
 import { cloudinary } from "../config/cloudinary.js";
+import { query } from "../config/db.js";
 
 const MAC_REGEX = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
 
@@ -183,4 +184,22 @@ export async function findLaptopBySerial({ serialNumber }) {
     throw error;
   }
   return laptop;
+}
+
+// List all laptops with basic student info for admin management UI
+export async function listAllLaptopsWithStudent() {
+  const result = await query(
+    `SELECT
+       l.id,
+       l.student_id,
+       l.brand,
+       l.model,
+       l.serial_number,
+       l.mac_address,
+       s.full_name AS student_full_name
+     FROM laptops l
+     LEFT JOIN students s ON s.id = l.student_id
+     ORDER BY l.created_at DESC`,
+  );
+  return result.rows;
 }

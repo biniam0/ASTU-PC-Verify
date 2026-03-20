@@ -37,19 +37,21 @@ export async function getDashboardSummary() {
          (SELECT COUNT(*) FROM scan_logs WHERE created_at::date = CURRENT_DATE) AS today_scans,
          (SELECT COUNT(*) FROM alerts WHERE status = 'active') AS active_alerts,
          (SELECT COUNT(*) FROM students WHERE created_at::date = CURRENT_DATE) AS today_student_registrations,
-         (SELECT COUNT(*) FROM laptops WHERE created_at::date = CURRENT_DATE) AS today_laptop_registrations,
-         (SELECT
-            COUNT(*) FILTER (WHERE status = 'registered') AS registered,
-            COUNT(*) FILTER (WHERE status = 'unregistered') AS unregistered,
-            COUNT(*) FILTER (WHERE status = 'no_laptops') AS no_laptops
-          FROM scan_logs
-          WHERE created_at::date = CURRENT_DATE
-         ) AS scans_breakdown
+         (SELECT COUNT(*) FROM laptops WHERE created_at::date = CURRENT_DATE) AS today_laptop_registrations
        `,
     );
 
+    const breakdownResult = await query(
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'registered') AS registered,
+         COUNT(*) FILTER (WHERE status = 'unregistered') AS unregistered,
+         COUNT(*) FILTER (WHERE status = 'no_laptops') AS no_laptops
+       FROM scan_logs
+       WHERE created_at::date = CURRENT_DATE`,
+    );
+
     const row = result.rows[0];
-    const breakdown = row.scans_breakdown || {};
+    const breakdown = breakdownResult.rows[0] || {};
 
     return {
       totalStudents: Number(row.total_students || 0),

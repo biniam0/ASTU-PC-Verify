@@ -12,6 +12,7 @@ import {
   updateLaptopInfo,
   deleteLaptop,
   findLaptopBySerial,
+  listAllLaptopsWithStudent,
 } from "../services/laptop.service.js";
 import {
   uploadLaptopImages,
@@ -76,6 +77,24 @@ laptopsRouter.get(
       res
         .status(err.status || 500)
         .json({ message: err.message || "Failed to get student laptops" });
+    }
+  },
+);
+
+// GET /api/laptops - List all laptops (Admin)
+laptopsRouter.get(
+  "/laptops",
+  authRequired,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const laptops = await listAllLaptopsWithStudent();
+      res.json({ laptops });
+    } catch (err) {
+      console.error("listLaptops error", err);
+      res
+        .status(err.status || 500)
+        .json({ message: err.message || "Failed to list laptops" });
     }
   },
 );

@@ -1,4 +1,5 @@
 import { body, param, query, validationResult } from 'express-validator';
+import { STUDENT_ID_REGEX } from "../services/student.service.js";
 
 // Middleware to check validation results
 export const validate = (validations) => {
@@ -27,7 +28,7 @@ export const studentValidations = {
   register: [
     body('studentId')
       .notEmpty().withMessage('Student ID is required')
-      .matches(/^[0-9]{4}\/[0-9]{5}$/).withMessage('Student ID must be in format: YYYY/XXXXX (e.g., 2023/12345)'),
+      .matches(STUDENT_ID_REGEX).withMessage('Invalid student ID format'),
     
     body('fullName')
       .notEmpty().withMessage('Full name is required')
@@ -60,7 +61,7 @@ export const studentValidations = {
   update: [
     param('studentId')
       .notEmpty().withMessage('Student ID is required')
-      .matches(/^[0-9]{4}\/[0-9]{5}$/).withMessage('Invalid student ID format'),
+      .matches(STUDENT_ID_REGEX).withMessage('Invalid student ID format'),
     
     body('fullName')
       .optional()
@@ -80,7 +81,7 @@ export const studentValidations = {
   getByStudentId: [
     param('studentId')
       .notEmpty().withMessage('Student ID is required')
-      .matches(/^[0-9]{4}\/[0-9]{5}$/).withMessage('Invalid student ID format'),
+      .matches(STUDENT_ID_REGEX).withMessage('Invalid student ID format'),
   ],
 
   list: [
@@ -132,7 +133,7 @@ export const laptopValidations = {
   register: [
     param('studentId')
       .notEmpty().withMessage('Student ID is required')
-      .matches(/^[0-9]{4}\/[0-9]{5}$/).withMessage('Invalid student ID format'),
+      .matches(STUDENT_ID_REGEX).withMessage('Invalid student ID format'),
     
     body('brand')
       .notEmpty().withMessage('Brand is required')
@@ -248,7 +249,7 @@ export const verificationValidations = {
   scan: [
     body('studentId')
       .notEmpty().withMessage('Student ID is required')
-      .matches(/^[0-9]{4}\/[0-9]{5}$/).withMessage('Invalid student ID format'),
+      .matches(STUDENT_ID_REGEX).withMessage('Invalid student ID format'),
     
     body('scannerType')
       .optional()
@@ -263,7 +264,7 @@ export const verificationValidations = {
   check: [
     param('studentId')
       .notEmpty().withMessage('Student ID is required')
-      .matches(/^[0-9]{4}\/[0-9]{5}$/).withMessage('Invalid student ID format'),
+      .matches(STUDENT_ID_REGEX).withMessage('Invalid student ID format'),
   ],
 };
 

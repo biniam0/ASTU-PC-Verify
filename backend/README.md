@@ -5,6 +5,7 @@ Node.js/Express backend for ASTU PC Management, using PostgreSQL (Neon), JWT aut
 ## High-level Responsibilities & MVP Features
 
 Main responsibilities:
+
 - Implement user authentication
 - Manage role-based access control
 - Store and manage student and laptop data
@@ -15,6 +16,7 @@ Main responsibilities:
 - Manage database operations (create, read, update, delete)
 
 Core backend features for MVP:
+
 - Login authentication
 - Student registration API
 - Laptop registration API

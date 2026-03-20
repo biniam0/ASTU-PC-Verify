@@ -9,7 +9,7 @@ import {
 } from "../models/student.model.js";
 import { logStudentChange } from "../models/studentAudit.model.js";
 
-let STUDENT_ID_REGEX = /^[0-9]{4}\/[0-9]{5}$/; // Default pattern, can be overridden via env
+export let STUDENT_ID_REGEX = /^[0-9]{4}\/[0-9]{5}$/; // Default pattern, can be overridden via env
 
 if (process.env.STUDENT_ID_REGEX) {
   try {

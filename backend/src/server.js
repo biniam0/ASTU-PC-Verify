@@ -24,7 +24,7 @@ import { dashboardRouter } from "./routes/dashboard.routes.js";
 import { auditRouter } from "./routes/audit.routes.js";
 import { settingsRouter } from "./routes/settings.routes.js";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 
