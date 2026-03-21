@@ -15,6 +15,7 @@ import {
   getDailyScanStats,
   getHourlyScanStats,
   exportScanLogsCsv,
+  getScanLogsByStudentDbId,
 } from "../services/scanLog.service.js";
 import { recordAuditEvent } from "../services/audit.service.js";
 
@@ -110,11 +111,9 @@ logsRouter.get(
       res.json({ logs });
     } catch (err) {
       console.error("scan logs date-range error", err);
-      res
-        .status(err.status || 500)
-        .json({
-          message: err.message || "Failed to get scan logs by date range",
-        });
+      res.status(err.status || 500).json({
+        message: err.message || "Failed to get scan logs by date range",
+      });
     }
   },
 );
@@ -175,6 +174,26 @@ logsRouter.get(
   },
 );
 
+// GET /api/logs/scans/student-db/:studentDbId - by student DB id (Admin, Security)
+logsRouter.get(
+  "/scans/student-db/:studentDbId",
+  authRequired,
+  requireAnyRole(["security", "admin"]),
+  async (req, res) => {
+    try {
+      const { studentDbId } = req.params;
+      const logs = await getScanLogsByStudentDbId({ studentDbId });
+      res.json({ logs });
+    } catch (err) {
+      console.error("scan logs by studentDbId error", err);
+      res.status(err.status || 500).json({
+        message:
+          err.message || "Failed to get scan logs by student database id",
+      });
+    }
+  },
+);
+
 // GET /api/logs/scans/statistics/daily - daily stats (Admin)
 logsRouter.get(
   "/scans/statistics/daily",
@@ -186,11 +205,9 @@ logsRouter.get(
       res.json({ stats });
     } catch (err) {
       console.error("daily scan statistics error", err);
-      res
-        .status(err.status || 500)
-        .json({
-          message: err.message || "Failed to get daily scan statistics",
-        });
+      res.status(err.status || 500).json({
+        message: err.message || "Failed to get daily scan statistics",
+      });
     }
   },
 );
@@ -206,11 +223,9 @@ logsRouter.get(
       res.json({ stats });
     } catch (err) {
       console.error("hourly scan statistics error", err);
-      res
-        .status(err.status || 500)
-        .json({
-          message: err.message || "Failed to get hourly scan statistics",
-        });
+      res.status(err.status || 500).json({
+        message: err.message || "Failed to get hourly scan statistics",
+      });
     }
   },
 );

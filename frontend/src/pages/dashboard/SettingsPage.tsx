@@ -1,5 +1,5 @@
-import type { SVGProps } from 'react'
-import { useEffect, useState } from 'react'
+import type { SVGProps } from "react";
+import { useEffect, useState } from "react";
 import {
   addDepartment,
   addGate,
@@ -8,161 +8,220 @@ import {
   getBackupConfig,
   getDepartments,
   getGates,
+  getSecuritySettings,
+  updateSecuritySettings,
   triggerManualBackup,
   type Department,
   type GateConfig,
-} from '@/services/settingsService'
+  type SecuritySettingRow,
+} from "@/services/settingsService";
 
 function SvgPath(props: SVGProps<SVGPathElement>) {
-  return <path {...props} />
+  return <path {...props} />;
 }
 
 function CogIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <SvgPath
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
         d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
       />
-      <SvgPath strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <SvgPath
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
     </svg>
-  )
+  );
 }
 
 export function SettingsPage() {
-  const [departments, setDepartments] = useState<Department[]>([])
-  const [gates, setGates] = useState<GateConfig[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [gates, setGates] = useState<GateConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [newDeptName, setNewDeptName] = useState('')
-  const [newDeptCode, setNewDeptCode] = useState('')
-  const [savingDept, setSavingDept] = useState(false)
+  const [newDeptName, setNewDeptName] = useState("");
+  const [newDeptCode, setNewDeptCode] = useState("");
+  const [savingDept, setSavingDept] = useState(false);
 
-  const [newGateName, setNewGateName] = useState('')
-  const [newGateLocation, setNewGateLocation] = useState('')
-  const [newGateScannerType, setNewGateScannerType] = useState('barcode')
-  const [newGateIp, setNewGateIp] = useState('')
-  const [savingGate, setSavingGate] = useState(false)
+  const [newGateName, setNewGateName] = useState("");
+  const [newGateLocation, setNewGateLocation] = useState("");
+  const [newGateScannerType, setNewGateScannerType] = useState("barcode");
+  const [newGateIp, setNewGateIp] = useState("");
+  const [savingGate, setSavingGate] = useState(false);
 
   const [backupInfo, setBackupInfo] = useState<{
-    lastRun?: string
-    status?: string
-  }>({})
-  const [backupLoading, setBackupLoading] = useState(false)
-  const [backupMessage, setBackupMessage] = useState<string | null>(null)
-  const [backupError, setBackupError] = useState<string | null>(null)
+    lastRun?: string;
+    status?: string;
+  }>({});
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
+  const [backupError, setBackupError] = useState<string | null>(null);
+
+  const [securitySettings, setSecuritySettings] = useState<
+    SecuritySettingRow[]
+  >([]);
+  const [securitySaving, setSecuritySaving] = useState(false);
 
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-    Promise.all([getDepartments(), getGates(), getBackupConfig()])
-      .then(([deptData, gateData, backup]) => {
-        if (cancelled) return
-        setDepartments(deptData)
-        setGates(gateData)
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    Promise.all([
+      getDepartments(),
+      getGates(),
+      getBackupConfig(),
+      getSecuritySettings(),
+    ])
+      .then(([deptData, gateData, backup, security]) => {
+        if (cancelled) return;
+        setDepartments(deptData);
+        setGates(gateData);
         setBackupInfo({
-          lastRun: backup.lastBackup?.completed_at ?? backup.lastBackup?.triggered_at,
+          lastRun:
+            backup.lastBackup?.completed_at ?? backup.lastBackup?.triggered_at,
           status: backup.lastBackup?.status,
-        })
+        });
+        setSecuritySettings(security);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load settings')
+        if (!cancelled)
+          setError(
+            err instanceof Error ? err.message : "Failed to load settings",
+          );
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+        if (!cancelled) setLoading(false);
+      });
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   async function handleAddDepartment() {
-    setError(null)
+    setError(null);
     if (!newDeptName.trim() || !newDeptCode.trim()) {
-      setError('Department name and code are required.')
-      return
+      setError("Department name and code are required.");
+      return;
     }
-    setSavingDept(true)
+    setSavingDept(true);
     try {
-      const dept = await addDepartment({ name: newDeptName.trim(), code: newDeptCode.trim() })
-      setDepartments((prev) => [...prev, dept])
-      setNewDeptName('')
-      setNewDeptCode('')
+      const dept = await addDepartment({
+        name: newDeptName.trim(),
+        code: newDeptCode.trim(),
+      });
+      setDepartments((prev) => [...prev, dept]);
+      setNewDeptName("");
+      setNewDeptCode("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add department')
+      setError(err instanceof Error ? err.message : "Failed to add department");
     } finally {
-      setSavingDept(false)
+      setSavingDept(false);
     }
   }
 
   async function handleDeleteDepartment(code: string) {
-    if (!window.confirm(`Delete department ${code}?`)) return
-    setError(null)
+    if (!window.confirm(`Delete department ${code}?`)) return;
+    setError(null);
     try {
-      await deleteDepartment(code)
-      setDepartments((prev) => prev.filter((d) => d.code !== code))
+      await deleteDepartment(code);
+      setDepartments((prev) => prev.filter((d) => d.code !== code));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete department')
+      setError(
+        err instanceof Error ? err.message : "Failed to delete department",
+      );
     }
   }
 
   async function handleAddGate() {
-    setError(null)
+    setError(null);
     if (!newGateName.trim()) {
-      setError('Gate name is required.')
-      return
+      setError("Gate name is required.");
+      return;
     }
-    setSavingGate(true)
+    setSavingGate(true);
     try {
       const gate = await addGate({
         name: newGateName.trim(),
         location: newGateLocation.trim() || undefined,
         scannerType: newGateScannerType,
         ipAddress: newGateIp.trim() || undefined,
-      })
-      setGates((prev) => [...prev, gate])
-      setNewGateName('')
-      setNewGateLocation('')
-      setNewGateScannerType('barcode')
-      setNewGateIp('')
+      });
+      setGates((prev) => [...prev, gate]);
+      setNewGateName("");
+      setNewGateLocation("");
+      setNewGateScannerType("barcode");
+      setNewGateIp("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add gate')
+      setError(err instanceof Error ? err.message : "Failed to add gate");
     } finally {
-      setSavingGate(false)
+      setSavingGate(false);
     }
   }
 
   async function handleDeleteGate(id: string) {
-    if (!window.confirm('Delete this gate?')) return
-    setError(null)
+    if (!window.confirm("Delete this gate?")) return;
+    setError(null);
     try {
-      await deleteGate(id)
-      setGates((prev) => prev.filter((g) => g.id !== id))
+      await deleteGate(id);
+      setGates((prev) => prev.filter((g) => g.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete gate')
+      setError(err instanceof Error ? err.message : "Failed to delete gate");
     }
   }
 
   async function handleTriggerBackup() {
-    setBackupMessage(null)
-    setBackupError(null)
-    setBackupLoading(true)
+    setBackupMessage(null);
+    setBackupError(null);
+    setBackupLoading(true);
     try {
-      const res = await triggerManualBackup()
-      setBackupMessage(`Backup request queued (status: ${res.status}).`)
-      const latest = await getBackupConfig()
+      const res = await triggerManualBackup();
+      setBackupMessage(`Backup request queued (status: ${res.status}).`);
+      const latest = await getBackupConfig();
       setBackupInfo({
-        lastRun: latest.lastBackup?.completed_at ?? latest.lastBackup?.triggered_at,
+        lastRun:
+          latest.lastBackup?.completed_at ?? latest.lastBackup?.triggered_at,
         status: latest.lastBackup?.status,
-      })
+      });
     } catch (err) {
-      setBackupError(err instanceof Error ? err.message : 'Failed to trigger backup')
+      setBackupError(
+        err instanceof Error ? err.message : "Failed to trigger backup",
+      );
     } finally {
-      setBackupLoading(false)
+      setBackupLoading(false);
+    }
+  }
+
+  async function handleSaveSecuritySettings() {
+    setError(null);
+    setSecuritySaving(true);
+    try {
+      const payload: Record<string, unknown> = {};
+      for (const row of securitySettings) {
+        const suffix = row.key.startsWith("security.")
+          ? row.key.replace(/^security\./, "")
+          : row.key;
+        // For now treat all values as strings; backend stores as JSON/primitive.
+        payload[suffix] = String(row.value ?? "");
+      }
+      const updated = await updateSecuritySettings(payload);
+      setSecuritySettings(updated);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to save security settings",
+      );
+    } finally {
+      setSecuritySaving(false);
     }
   }
 
@@ -175,7 +234,9 @@ export function SettingsPage() {
 
       <div className="max-w-2xl space-y-8">
         {error && (
-          <div className="rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
+          <div className="rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+            {error}
+          </div>
         )}
 
         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -189,12 +250,19 @@ export function SettingsPage() {
                   <li className="text-gray-500">No departments configured.</li>
                 ) : (
                   departments.map((d) => (
-                    <li key={d.id} className="flex items-center justify-between gap-3">
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between gap-3"
+                    >
                       <div>
-                        <span className="font-medium text-gray-900">{d.code}</span>{' '}
-                        <span className="text-gray-700">— {d.name}</span>{' '}
+                        <span className="font-medium text-gray-900">
+                          {d.code}
+                        </span>{" "}
+                        <span className="text-gray-700">— {d.name}</span>{" "}
                         {!d.is_active && (
-                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">inactive</span>
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                            inactive
+                          </span>
                         )}
                       </div>
                       <button
@@ -232,7 +300,7 @@ export function SettingsPage() {
                   disabled={savingDept}
                   className="inline-flex w-fit items-center rounded bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
                 >
-                  {savingDept ? 'Adding…' : 'Add department'}
+                  {savingDept ? "Adding…" : "Add department"}
                 </button>
               </div>
             </>
@@ -250,18 +318,29 @@ export function SettingsPage() {
                   <li className="text-gray-500">No gates configured.</li>
                 ) : (
                   gates.map((g) => (
-                    <li key={g.id} className="flex items-center justify-between gap-3">
+                    <li
+                      key={g.id}
+                      className="flex items-center justify-between gap-3"
+                    >
                       <div>
-                        <span className="font-medium text-gray-900">{g.name}</span>{' '}
-                        {g.location && <span className="text-gray-700">— {g.location}</span>}{' '}
+                        <span className="font-medium text-gray-900">
+                          {g.name}
+                        </span>{" "}
+                        {g.location && (
+                          <span className="text-gray-700">— {g.location}</span>
+                        )}{" "}
                         <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
                           {g.scanner_type}
-                        </span>{' '}
+                        </span>{" "}
                         {g.ip_address && (
-                          <span className="text-xs text-gray-500">({g.ip_address})</span>
+                          <span className="text-xs text-gray-500">
+                            ({g.ip_address})
+                          </span>
                         )}
                         {!g.is_active && (
-                          <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">inactive</span>
+                          <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                            inactive
+                          </span>
                         )}
                       </div>
                       <button
@@ -318,7 +397,7 @@ export function SettingsPage() {
                   disabled={savingGate}
                   className="inline-flex w-fit items-center rounded bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
                 >
-                  {savingGate ? 'Adding…' : 'Add gate'}
+                  {savingGate ? "Adding…" : "Add gate"}
                 </button>
               </div>
             </>
@@ -328,23 +407,32 @@ export function SettingsPage() {
         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h3 className="text-base font-semibold text-gray-900">Backups</h3>
           <p className="mt-1 text-sm text-gray-600">
-            View backup status and trigger a manual backup request. Actual database backup execution is handled by server-side tooling.
+            View backup status and trigger a manual backup request. Actual
+            database backup execution is handled by server-side tooling.
           </p>
           <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-gray-500">Last backup</dt>
-              <dd className="mt-0.5 text-gray-900">{backupInfo.lastRun ?? '–'}</dd>
+              <dd className="mt-0.5 text-gray-900">
+                {backupInfo.lastRun ?? "–"}
+              </dd>
             </div>
             <div>
               <dt className="text-gray-500">Status</dt>
-              <dd className="mt-0.5 text-gray-900">{backupInfo.status ?? '–'}</dd>
+              <dd className="mt-0.5 text-gray-900">
+                {backupInfo.status ?? "–"}
+              </dd>
             </div>
           </dl>
           {backupMessage && (
-            <div className="mt-3 rounded bg-green-50 px-3 py-2 text-sm text-green-800">{backupMessage}</div>
+            <div className="mt-3 rounded bg-green-50 px-3 py-2 text-sm text-green-800">
+              {backupMessage}
+            </div>
           )}
           {backupError && (
-            <div className="mt-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{backupError}</div>
+            <div className="mt-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+              {backupError}
+            </div>
           )}
           <button
             type="button"
@@ -352,10 +440,66 @@ export function SettingsPage() {
             disabled={backupLoading}
             className="mt-4 rounded bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
           >
-            {backupLoading ? 'Requesting…' : 'Trigger manual backup'}
+            {backupLoading ? "Requesting…" : "Trigger manual backup"}
           </button>
+        </section>
+
+        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 className="text-base font-semibold text-gray-900">
+            Security settings
+          </h3>
+          <p className="mt-1 text-sm text-gray-600">
+            Fine-tune verification and security behavior. Keys are stored under
+            the <code>security.*</code> prefix on the server.
+          </p>
+          {loading ? (
+            <p className="mt-3 text-sm text-gray-500">Loading…</p>
+          ) : (
+            <>
+              <div className="mt-3 space-y-2 text-sm">
+                {securitySettings.length === 0 ? (
+                  <p className="text-gray-500">
+                    No security settings are currently defined.
+                  </p>
+                ) : (
+                  securitySettings.map((row, idx) => {
+                    const suffix = row.key.startsWith("security.")
+                      ? row.key.replace(/^security\./, "")
+                      : row.key;
+                    return (
+                      <div key={row.key} className="flex items-center gap-3">
+                        <div className="min-w-[9rem] text-xs font-medium text-gray-700">
+                          {suffix}
+                        </div>
+                        <input
+                          type="text"
+                          value={String(row.value ?? "")}
+                          onChange={(e) => {
+                            const next = [...securitySettings];
+                            next[idx] = { ...next[idx], value: e.target.value };
+                            setSecuritySettings(next);
+                          }}
+                          className="flex-1 rounded border border-gray-300 bg-gray-50 px-3 py-1.5 text-xs text-gray-900 outline-none transition focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                        />
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              {securitySettings.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleSaveSecuritySettings}
+                  disabled={securitySaving}
+                  className="mt-4 inline-flex w-fit items-center rounded bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
+                >
+                  {securitySaving ? "Saving…" : "Save security settings"}
+                </button>
+              )}
+            </>
+          )}
         </section>
       </div>
     </div>
-  )
+  );
 }

@@ -8,6 +8,7 @@ import {
   listScanLogsByStaff,
   getDailyScanStatistics,
   getHourlyScanDistribution,
+  listScanLogsByStudentDbId,
 } from "../models/scanLog.model.js";
 
 export async function getScanLogs(filters) {
@@ -42,6 +43,10 @@ export async function getScanLogsByGate({ gateLocation }) {
 
 export async function getScanLogsByStaff({ userId }) {
   return listScanLogsByStaff({ userId });
+}
+
+export async function getScanLogsByStudentDbId({ studentDbId }) {
+  return listScanLogsByStudentDbId({ studentDbId });
 }
 
 export async function getDailyScanStats() {

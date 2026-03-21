@@ -6,7 +6,10 @@ import {
   updateLaptopById,
   deleteLaptopById,
 } from "../models/laptop.model.js";
-import { findStudentByStudentId } from "../models/student.model.js";
+import {
+  findStudentByStudentId,
+  findStudentById,
+} from "../models/student.model.js";
 import { listImagesForLaptopRaw } from "../models/laptopImage.model.js";
 import { cloudinary } from "../config/cloudinary.js";
 import { query } from "../config/db.js";
@@ -100,7 +103,15 @@ export async function getLaptopByIdService({ laptopId }) {
     error.status = 404;
     throw error;
   }
-  return laptop;
+  let student = null;
+  if (laptop.student_id) {
+    try {
+      student = await findStudentById(laptop.student_id);
+    } catch (err) {
+      console.error("Failed to load student for laptop", err);
+    }
+  }
+  return { laptop, student };
 }
 
 export async function updateLaptopInfo({

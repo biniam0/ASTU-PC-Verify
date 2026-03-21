@@ -1,29 +1,31 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { login } from '@/services/authService'
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "@/services/authService";
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
     if (!email.trim() || !password) {
-      setError('Please enter email and password.')
-      return
+      setError("Please enter email and password.");
+      return;
     }
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await login({ email: email.trim(), password })
-      navigate('/', { replace: true })
+      await login({ email: email.trim(), password });
+      navigate("/", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+      setError(
+        err instanceof Error ? err.message : "Login failed. Please try again.",
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -39,7 +41,7 @@ export function LoginPage() {
       </div>
       {/* System title */}
       <h1 className="mt-4 text-center text-gray-800">
-        <span className="font-bold">ASTU</span>{' '}
+        <span className="font-bold">ASTU</span>{" "}
         <span className="font-normal">PC MANAGEMENT</span>
       </h1>
 
@@ -79,8 +81,18 @@ export function LoginPage() {
                 <span className="text-sm">Signing in…</span>
               ) : (
                 <>
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
                   </svg>
                   <span>Sign in</span>
                 </>
@@ -96,5 +108,5 @@ export function LoginPage() {
         </form>
       </div>
     </div>
-  )
+  );
 }

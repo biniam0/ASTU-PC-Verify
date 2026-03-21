@@ -1,179 +1,207 @@
-import type { SVGProps } from 'react'
-import { useEffect, useState, type FormEvent } from 'react'
-import type { AuthUser } from '@/services/authService'
-import { changePassword, fetchProfile, updateOwnProfile } from '@/services/authService'
+import type { SVGProps } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import type { AuthUser } from "@/services/authService";
+import {
+  changePassword,
+  fetchProfile,
+  updateOwnProfile,
+} from "@/services/authService";
 
 function SvgPath(props: SVGProps<SVGPathElement>) {
-  return <path {...props} />
+  return <path {...props} />;
 }
 
 function PersonIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <SvgPath strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <SvgPath
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
     </svg>
-  )
+  );
 }
 
 export function ProfilePage() {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [profileForm, setProfileForm] = useState({
-    fullName: '',
-    username: '',
-    email: '',
-  })
-  const [profileMessage, setProfileMessage] = useState<string | null>(null)
-  const [profileError, setProfileError] = useState<string | null>(null)
-  const [profileSaving, setProfileSaving] = useState(false)
+    fullName: "",
+    username: "",
+    email: "",
+  });
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
-  const [passwordError, setPasswordError] = useState<string | null>(null)
-  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setLoadError(null)
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
     fetchProfile()
       .then((u) => {
-        if (cancelled) return
-        setUser(u)
+        if (cancelled) return;
+        setUser(u);
         setProfileForm({
-          fullName: u.fullName ?? '',
+          fullName: u.fullName ?? "",
           username: u.username,
           email: u.email,
-        })
+        });
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(err instanceof Error ? err.message : 'Failed to load profile')
+        if (!cancelled)
+          setLoadError(
+            err instanceof Error ? err.message : "Failed to load profile",
+          );
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+        if (!cancelled) setLoading(false);
+      });
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   async function handleProfileSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!user) return
-    setProfileMessage(null)
-    setProfileError(null)
+    e.preventDefault();
+    if (!user) return;
+    setProfileMessage(null);
+    setProfileError(null);
 
-    const { fullName, username, email } = profileForm
+    const { fullName, username, email } = profileForm;
     if (!username.trim() || !email.trim()) {
-      setProfileError('Username and email are required.')
-      return
+      setProfileError("Username and email are required.");
+      return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setProfileError('Enter a valid email address.')
-      return
+      setProfileError("Enter a valid email address.");
+      return;
     }
 
     // Only admins are allowed to update profile via /users/:id in current backend
-    if (user.role !== 'admin') {
-      setProfileError('Profile editing is only available for admin users in the current version.')
-      return
+    if (user.role !== "admin") {
+      setProfileError(
+        "Profile editing is only available for admin users in the current version.",
+      );
+      return;
     }
 
-    setProfileSaving(true)
+    setProfileSaving(true);
     try {
       const updated = await updateOwnProfile(user.id, {
         fullName: fullName.trim() || undefined,
         username: username.trim(),
         email: email.trim(),
-      })
-      setUser(updated)
+      });
+      setUser(updated);
       setProfileForm({
-        fullName: updated.fullName ?? '',
+        fullName: updated.fullName ?? "",
         username: updated.username,
         email: updated.email,
-      })
-      setProfileMessage('Profile updated successfully.')
+      });
+      setProfileMessage("Profile updated successfully.");
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : 'Update failed. Please try again.')
+      setProfileError(
+        err instanceof Error ? err.message : "Update failed. Please try again.",
+      );
     } finally {
-      setProfileSaving(false)
+      setProfileSaving(false);
     }
   }
 
   function handleProfileCancel() {
-    if (!user) return
+    if (!user) return;
     setProfileForm({
-      fullName: user.fullName ?? '',
+      fullName: user.fullName ?? "",
       username: user.username,
       email: user.email,
-    })
-    setProfileMessage(null)
-    setProfileError(null)
+    });
+    setProfileMessage(null);
+    setProfileError(null);
   }
 
-  function getPasswordStrengthLabel(pw: string): { label: string; className: string } {
-    if (!pw) return { label: 'None', className: 'text-gray-500' }
-    let score = 0
-    if (pw.length >= 8) score++
-    if (/[A-Z]/.test(pw)) score++
-    if (/[a-z]/.test(pw)) score++
-    if (/\d/.test(pw)) score++
-    if (/[@$!%*?&]/.test(pw)) score++
-    if (score >= 4) return { label: 'Strong', className: 'text-green-600' }
-    if (score >= 3) return { label: 'Medium', className: 'text-yellow-600' }
-    return { label: 'Weak', className: 'text-red-600' }
+  function getPasswordStrengthLabel(pw: string): {
+    label: string;
+    className: string;
+  } {
+    if (!pw) return { label: "None", className: "text-gray-500" };
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[@$!%*?&]/.test(pw)) score++;
+    if (score >= 4) return { label: "Strong", className: "text-green-600" };
+    if (score >= 3) return { label: "Medium", className: "text-yellow-600" };
+    return { label: "Weak", className: "text-red-600" };
   }
 
   async function handlePasswordSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setPasswordMessage(null)
-    setPasswordError(null)
+    e.preventDefault();
+    setPasswordMessage(null);
+    setPasswordError(null);
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError('Fill in all password fields.')
-      return
+      setPasswordError("Fill in all password fields.");
+      return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError('New password and confirmation do not match.')
-      return
+      setPasswordError("New password and confirmation do not match.");
+      return;
     }
     if (newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters.')
-      return
+      setPasswordError("New password must be at least 8 characters.");
+      return;
     }
 
-    setPasswordSaving(true)
+    setPasswordSaving(true);
     try {
-      const res = await changePassword({ currentPassword, newPassword })
-      setPasswordMessage(res.message || 'Password changed successfully.')
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
+      const res = await changePassword({ currentPassword, newPassword });
+      setPasswordMessage(res.message || "Password changed successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      setPasswordError(err instanceof Error ? err.message : 'Failed to change password.')
+      setPasswordError(
+        err instanceof Error ? err.message : "Failed to change password.",
+      );
     } finally {
-      setPasswordSaving(false)
+      setPasswordSaving(false);
     }
   }
 
   function handlePasswordCancel() {
-    setCurrentPassword('')
-    setNewPassword('')
-    setConfirmPassword('')
-    setPasswordMessage(null)
-    setPasswordError(null)
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordMessage(null);
+    setPasswordError(null);
   }
 
   const inputClass =
-    'w-full max-w-md rounded border border-gray-300 bg-gray-50 px-3 py-2.5 text-gray-900 outline-none transition focus:border-teal-500 focus:ring-1 focus:ring-teal-500'
-  const labelClass = 'mb-1 block text-sm font-medium text-gray-700'
+    "w-full max-w-md rounded border border-gray-300 bg-gray-50 px-3 py-2.5 text-gray-900 outline-none transition focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
+  const labelClass = "mb-1 block text-sm font-medium text-gray-700";
 
   if (loading) {
-    return <div className="py-8 text-center text-gray-500">Loading profile…</div>
+    return (
+      <div className="py-8 text-center text-gray-500">Loading profile…</div>
+    );
   }
 
   if (loadError || !user) {
@@ -184,10 +212,10 @@ export function ProfilePage() {
           <h2 className="text-lg font-semibold text-white">Profile</h2>
         </div>
         <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {loadError ?? 'Failed to load profile.'}
+          {loadError ?? "Failed to load profile."}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -199,15 +227,21 @@ export function ProfilePage() {
 
       <div className="max-w-2xl space-y-8">
         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-base font-semibold text-gray-900">Account information</h3>
+          <h3 className="text-base font-semibold text-gray-900">
+            Account information
+          </h3>
           <dl className="mt-4 grid gap-3 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-gray-500">User ID</dt>
-              <dd className="mt-0.5 font-medium text-gray-900">{user?.id ?? '–'}</dd>
+              <dd className="mt-0.5 font-medium text-gray-900">
+                {user?.id ?? "–"}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-gray-500">Name</dt>
-              <dd className="mt-0.5 font-medium text-gray-900">{user.fullName ?? '–'}</dd>
+              <dd className="mt-0.5 font-medium text-gray-900">
+                {user.fullName ?? "–"}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-gray-500">Role</dt>
@@ -215,7 +249,9 @@ export function ProfilePage() {
             </div>
             <div>
               <dt className="text-sm text-gray-500">Username</dt>
-              <dd className="mt-0.5 font-medium text-gray-900">{user.username}</dd>
+              <dd className="mt-0.5 font-medium text-gray-900">
+                {user.username}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-gray-500">Email</dt>
@@ -225,7 +261,9 @@ export function ProfilePage() {
         </section>
 
         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-base font-semibold text-gray-900">Edit profile</h3>
+          <h3 className="text-base font-semibold text-gray-900">
+            Edit profile
+          </h3>
           <form onSubmit={handleProfileSubmit} className="mt-4 space-y-4">
             {profileMessage && (
               <div className="rounded bg-green-50 px-3 py-2 text-sm text-green-800">
@@ -245,9 +283,11 @@ export function ProfilePage() {
                 id="fullName"
                 type="text"
                 value={profileForm.fullName}
-                onChange={(e) => setProfileForm((p) => ({ ...p, fullName: e.target.value }))}
+                onChange={(e) =>
+                  setProfileForm((p) => ({ ...p, fullName: e.target.value }))
+                }
                 className={inputClass}
-                disabled={profileSaving || user.role !== 'admin'}
+                disabled={profileSaving || user.role !== "admin"}
               />
             </div>
             <div>
@@ -258,9 +298,11 @@ export function ProfilePage() {
                 id="username"
                 type="text"
                 value={profileForm.username}
-                onChange={(e) => setProfileForm((p) => ({ ...p, username: e.target.value }))}
+                onChange={(e) =>
+                  setProfileForm((p) => ({ ...p, username: e.target.value }))
+                }
                 className={inputClass}
-                disabled={profileSaving || user.role !== 'admin'}
+                disabled={profileSaving || user.role !== "admin"}
               />
             </div>
             <div>
@@ -271,18 +313,20 @@ export function ProfilePage() {
                 id="email"
                 type="email"
                 value={profileForm.email}
-                onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))}
+                onChange={(e) =>
+                  setProfileForm((p) => ({ ...p, email: e.target.value }))
+                }
                 className={inputClass}
-                disabled={profileSaving || user.role !== 'admin'}
+                disabled={profileSaving || user.role !== "admin"}
               />
             </div>
             <div className="flex gap-3 pt-1">
               <button
                 type="submit"
-                disabled={profileSaving || user.role !== 'admin'}
+                disabled={profileSaving || user.role !== "admin"}
                 className="rounded bg-blue-600 px-4 py-2.5 font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
               >
-                {profileSaving ? 'Saving…' : 'Save changes'}
+                {profileSaving ? "Saving…" : "Save changes"}
               </button>
               <button
                 type="button"
@@ -293,22 +337,29 @@ export function ProfilePage() {
                 Cancel
               </button>
             </div>
-            {user.role !== 'admin' && (
+            {user.role !== "admin" && (
               <p className="text-xs text-gray-500">
-                Profile fields are read-only for security users. Contact an administrator to update your account details.
+                Profile fields are read-only for security users. Contact an
+                administrator to update your account details.
               </p>
             )}
           </form>
         </section>
 
         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-base font-semibold text-gray-900">Change password</h3>
+          <h3 className="text-base font-semibold text-gray-900">
+            Change password
+          </h3>
           <form onSubmit={handlePasswordSubmit} className="mt-4 space-y-4">
             {passwordMessage && (
-              <div className="rounded bg-green-50 px-3 py-2 text-sm text-green-800">{passwordMessage}</div>
+              <div className="rounded bg-green-50 px-3 py-2 text-sm text-green-800">
+                {passwordMessage}
+              </div>
             )}
             {passwordError && (
-              <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{passwordError}</div>
+              <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+                {passwordError}
+              </div>
             )}
             <div>
               <label htmlFor="currentPassword" className={labelClass}>
@@ -336,9 +387,12 @@ export function ProfilePage() {
                 disabled={passwordSaving}
               />
               <p className="mt-1 text-xs text-gray-500">
-                Must be at least 8 characters and include uppercase, lowercase, number, and special character.
+                Must be at least 8 characters and include uppercase, lowercase,
+                number, and special character.
               </p>
-              <p className={`mt-1 text-xs font-medium ${getPasswordStrengthLabel(newPassword).className}`}>
+              <p
+                className={`mt-1 text-xs font-medium ${getPasswordStrengthLabel(newPassword).className}`}
+              >
                 Strength: {getPasswordStrengthLabel(newPassword).label}
               </p>
             </div>
@@ -361,7 +415,7 @@ export function ProfilePage() {
                 disabled={passwordSaving}
                 className="rounded bg-blue-600 px-4 py-2.5 font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
               >
-                {passwordSaving ? 'Updating…' : 'Save new password'}
+                {passwordSaving ? "Updating…" : "Save new password"}
               </button>
               <button
                 type="button"
@@ -376,5 +430,5 @@ export function ProfilePage() {
         </section>
       </div>
     </div>
-  )
+  );
 }

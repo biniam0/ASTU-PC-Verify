@@ -107,8 +107,8 @@ laptopsRouter.get(
   async (req, res) => {
     try {
       const { laptopId } = req.params;
-      const laptop = await getLaptopByIdService({ laptopId });
-      res.json({ laptop });
+      const { laptop, student } = await getLaptopByIdService({ laptopId });
+      res.json({ laptop, student });
     } catch (err) {
       console.error("getLaptop error", err);
       res

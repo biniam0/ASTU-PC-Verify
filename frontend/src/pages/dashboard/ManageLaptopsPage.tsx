@@ -1,129 +1,214 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { getLaptops, deleteLaptop } from '@/services/laptopService'
-import type { Laptop } from '@/types/laptop'
+import { useState, useEffect, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getLaptops, deleteLaptop } from "@/services/laptopService";
+import type { Laptop } from "@/types/laptop";
 
 const MOCK_LAPTOPS: Laptop[] = [
   {
-    id: '1',
-    laptopId: 'LPT/001',
-    studentId: '1',
-    brandName: 'Dell',
-    model: 'i5',
-    serialNumber: 'SN123456',
-    status: 'Assigned',
-    assignedTo: 'Abebe Kebede',
+    id: "1",
+    laptopId: "LPT/001",
+    studentId: "1",
+    brandName: "Dell",
+    model: "i5",
+    serialNumber: "SN123456",
+    status: "Assigned",
+    assignedTo: "Abebe Kebede",
   },
   {
-    id: '2',
-    laptopId: 'LPT/002',
-    studentId: '',
-    brandName: 'HP',
-    model: 'i7',
-    serialNumber: 'SN789012',
-    status: 'Available',
+    id: "2",
+    laptopId: "LPT/002",
+    studentId: "",
+    brandName: "HP",
+    model: "i7",
+    serialNumber: "SN789012",
+    status: "Available",
     assignedTo: undefined,
   },
-]
+];
 
 function LaptopIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+      />
     </svg>
-  )
+  );
 }
 
 function SearchIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
     </svg>
-  )
+  );
 }
 
 function PencilIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+      />
     </svg>
-  )
+  );
 }
 
 function TrashIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+      />
     </svg>
-  )
+  );
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+      />
+    </svg>
+  );
 }
 
 function PlusLaptopIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+      />
     </svg>
-  )
+  );
 }
 
 export function ManageLaptopsPage() {
-  const navigate = useNavigate()
-  const [laptops, setLaptops] = useState<Laptop[]>([])
-  const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [laptops, setLaptops] = useState<Laptop[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     getLaptops()
       .then((data) => {
-        if (!cancelled) setLaptops(Array.isArray(data) ? data : [])
+        if (!cancelled) setLaptops(Array.isArray(data) ? data : []);
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load laptops')
-          setLaptops([])
+          setError(
+            err instanceof Error ? err.message : "Failed to load laptops",
+          );
+          setLaptops([]);
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+        if (!cancelled) setLoading(false);
+      });
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   const filteredLaptops = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return laptops
+    const q = search.trim().toLowerCase();
+    if (!q) return laptops;
     return laptops.filter(
       (l) =>
         (l.laptopId || l.id).toLowerCase().includes(q) ||
-        (l.brandName || '').toLowerCase().includes(q) ||
-        (l.model || '').toLowerCase().includes(q) ||
-        (l.serialNumber || '').toLowerCase().includes(q) ||
-        (l.assignedTo || '').toLowerCase().includes(q)
-    )
-  }, [laptops, search])
+        (l.brandName || "").toLowerCase().includes(q) ||
+        (l.model || "").toLowerCase().includes(q) ||
+        (l.serialNumber || "").toLowerCase().includes(q) ||
+        (l.assignedTo || "").toLowerCase().includes(q),
+    );
+  }, [laptops, search]);
 
   async function handleDelete(laptop: Laptop) {
-    if (!window.confirm(`Delete laptop "${laptop.brandName} ${laptop.model}" (${laptop.serialNumber})?`)) return
-    setDeletingId(laptop.id)
+    if (
+      !window.confirm(
+        `Delete laptop "${laptop.brandName} ${laptop.model}" (${laptop.serialNumber})?`,
+      )
+    )
+      return;
+    setDeletingId(laptop.id);
     try {
-      await deleteLaptop(laptop.id)
-      setLaptops((prev) => prev.filter((l) => l.id !== laptop.id))
+      await deleteLaptop(laptop.id);
+      setLaptops((prev) => prev.filter((l) => l.id !== laptop.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Delete failed')
+      setError(err instanceof Error ? err.message : "Delete failed");
     } finally {
-      setDeletingId(null)
+      setDeletingId(null);
     }
   }
 
   function handleEdit(laptop: Laptop) {
-    navigate(`/laptops/${laptop.id}/edit`, { state: { laptop } })
+    navigate(`/laptops/${laptop.id}/edit`, { state: { laptop } });
+  }
+
+  function handleView(laptop: Laptop) {
+    navigate(`/laptops/${laptop.id}`);
   }
 
   return (
@@ -155,7 +240,9 @@ export function ManageLaptopsPage() {
         </div>
 
         {error && (
-          <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+          <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
         )}
 
         <div className="overflow-x-auto rounded border border-gray-200 bg-white">
@@ -191,7 +278,10 @@ export function ManageLaptopsPage() {
               <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredLaptops.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                    <td
+                      colSpan={7}
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
                       No laptops found.
                     </td>
                   </tr>
@@ -213,19 +303,28 @@ export function ManageLaptopsPage() {
                       <td className="whitespace-nowrap px-4 py-3">
                         <span
                           className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            laptop.status === 'Assigned' || laptop.studentId
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-green-100 text-green-800'
+                            laptop.status === "Assigned" || laptop.studentId
+                              ? "bg-blue-600 text-white"
+                              : "bg-green-100 text-green-800"
                           }`}
                         >
-                          {laptop.status || (laptop.studentId ? 'Assigned' : 'Available')}
+                          {laptop.status ||
+                            (laptop.studentId ? "Assigned" : "Available")}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
-                        {laptop.assignedTo || '-'}
+                        {laptop.assignedTo || "-"}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleView(laptop)}
+                            className="rounded p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                            title="View details"
+                          >
+                            <EyeIcon className="h-5 w-5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleEdit(laptop)}
@@ -254,5 +353,5 @@ export function ManageLaptopsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

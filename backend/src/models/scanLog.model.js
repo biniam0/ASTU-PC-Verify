@@ -177,6 +177,19 @@ export async function listScanLogsByStaff({ userId }) {
   });
 }
 
+export async function listScanLogsByStudentDbId({ studentDbId }) {
+  const idNum =
+    typeof studentDbId === "string" ? parseInt(studentDbId, 10) : studentDbId;
+  if (!idNum || Number.isNaN(idNum)) {
+    return [];
+  }
+
+  return prisma.scan_logs.findMany({
+    where: { student_id: idNum },
+    orderBy: { created_at: "desc" },
+  });
+}
+
 export async function getDailyScanStatistics() {
   const logs = await prisma.scan_logs.findMany({
     select: {

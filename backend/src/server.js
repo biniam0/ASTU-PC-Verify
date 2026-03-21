@@ -5,12 +5,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 // Import rate limiters
-import { 
-  apiLimiter, 
-  authLimiter, 
+import {
+  apiLimiter,
+  authLimiter,
   passwordResetLimiter,
   verificationLimiter,
-  createCustomLimiter 
+  createCustomLimiter,
 } from "./middleware/rateLimit.middleware.js";
 
 import { authRouter } from "./routes/auth.routes.js";
@@ -58,7 +58,7 @@ app.use("/api/verification", verificationLimiter);
 const studentCreationLimiter = createCustomLimiter(
   60 * 60 * 1000, // 1 hour
   50, // 50 student creations per hour
-  "Too many student creation attempts, please try again later"
+  "Too many student creation attempts, please try again later",
 );
 app.use("/api/students", studentCreationLimiter);
 
@@ -76,22 +76,22 @@ app.use("/api/settings", settingsRouter);
 
 // Error handling middleware for validation errors
 app.use((err, req, res, next) => {
-  if (err.name === 'ValidationError') {
+  if (err.name === "ValidationError") {
     return res.status(400).json({
       status: 400,
-      message: 'Validation Error',
-      errors: err.errors
+      message: "Validation Error",
+      errors: err.errors,
     });
   }
-  
+
   // Handle rate limit errors
-  if (err.name === 'RateLimitError') {
+  if (err.name === "RateLimitError") {
     return res.status(429).json({
       status: 429,
-      message: 'Too many requests, please try again later'
+      message: "Too many requests, please try again later",
     });
   }
-  
+
   next(err);
 });
 
