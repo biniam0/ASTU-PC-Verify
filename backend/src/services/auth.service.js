@@ -17,7 +17,14 @@ import {
   revokeSessionByToken,
 } from "../models/session.model.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+const rawJwtSecret = process.env.JWT_SECRET || "dev-secret-change-me";
+if (
+  rawJwtSecret === "dev-secret-change-me" &&
+  process.env.NODE_ENV === "production"
+) {
+  throw new Error("JWT_SECRET environment variable must be set in production");
+}
+const JWT_SECRET = rawJwtSecret;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "8h";
 const BCRYPT_ROUNDS = Number(process.env.BCRYPT_ROUNDS || 10);
 const MAX_FAILED_ATTEMPTS = Number(process.env.AUTH_MAX_FAILED_ATTEMPTS || 5);

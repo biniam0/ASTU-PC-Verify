@@ -2,7 +2,14 @@ import jwt from "jsonwebtoken";
 import { findSessionByToken } from "../models/session.model.js";
 import { findUserById } from "../models/user.model.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+const rawJwtSecret = process.env.JWT_SECRET || "dev-secret-change-me";
+if (
+  rawJwtSecret === "dev-secret-change-me" &&
+  process.env.NODE_ENV === "production"
+) {
+  throw new Error("JWT_SECRET environment variable must be set in production");
+}
+const JWT_SECRET = rawJwtSecret;
 
 export async function authRequired(req, res, next) {
   try {

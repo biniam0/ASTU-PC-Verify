@@ -9,17 +9,28 @@ const DEFAULT_CACHE_TTL_SECONDS = Number(
 );
 
 async function withCache(key, compute, ttlSeconds = DEFAULT_CACHE_TTL_SECONDS) {
+  // Best-effort cache: if the cache table or query fails, fall back to live computation
   if (ttlSeconds > 0) {
-    const cached = await getCachedMetric({ key });
-    if (cached) {
-      return cached;
+    try {
+      const cached = await getCachedMetric({ key });
+      if (cached) {
+        return cached;
+      }
+    } catch (err) {
+      console.error("dashboard cache read error", err);
+      // continue without cached value
     }
   }
 
   const payload = await compute();
 
   if (ttlSeconds > 0) {
-    await setCachedMetric({ key, payload, ttlSeconds });
+    try {
+      await setCachedMetric({ key, payload, ttlSeconds });
+    } catch (err) {
+      console.error("dashboard cache write error", err);
+      // ignore cache write failures so API still responds successfully
+    }
   }
 
   return payload;
