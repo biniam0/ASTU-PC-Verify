@@ -41,22 +41,30 @@ export function BarcodeCameraModal({ open, onClose, onDecoded }: BarcodeCameraMo
 
     const reader = new BrowserMultiFormatReader()
 
-    reader
-      .decodeFromVideoDevice(undefined, video, (result, _err, ctrl) => {
-        if (cancelled || decoded || !result) return
-        decoded = true
-        const text = result.getText()
-        try {
-          ctrl.stop()
-        } catch {
-          /* ignore */
+    async function startCamera() {
+      try {
+        let deviceId: string | undefined
+        if (navigator.mediaDevices?.enumerateDevices) {
+          const devices = await navigator.mediaDevices.enumerateDevices()
+          const videoInputs = devices.filter((device) => device.kind === 'videoinput')
+          const preferred =
+            videoInputs.find((device) => /back|rear|environment/i.test(device.label)) ??
+            videoInputs[0]
+          deviceId = preferred?.deviceId
         }
-        onDecodedRef.current(text)
-      })
-      .then((c) => {
-        if (!cancelled) controls = c
-      })
-      .catch((e: unknown) => {
+
+        await reader.decodeFromVideoDevice(deviceId, video, (result, _err, ctrl) => {
+          if (cancelled || decoded || !result) return
+          decoded = true
+          const text = result.getText()
+          try {
+            ctrl.stop()
+          } catch {
+            /* ignore */
+          }
+          onDecodedRef.current(text)
+        })
+      } catch (e: unknown) {
         if (!cancelled) {
           const msg =
             e instanceof Error
@@ -64,10 +72,12 @@ export function BarcodeCameraModal({ open, onClose, onDecoded }: BarcodeCameraMo
               : 'Could not start camera. Allow camera access and use HTTPS or localhost.'
           setError(msg)
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setStarting(false)
-      })
+      }
+    }
+
+    void startCamera()
 
     return () => {
       cancelled = true

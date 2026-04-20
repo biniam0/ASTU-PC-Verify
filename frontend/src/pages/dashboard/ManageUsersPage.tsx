@@ -199,7 +199,7 @@ export function ManageUsersPage() {
     <div>
       <div className="-mx-6 -mt-6 mb-6 flex items-center gap-2 bg-teal-500 px-6 py-3">
         <PeopleIcon className="h-6 w-6 shrink-0 text-white" />
-        <h2 className="text-lg font-semibold text-white">Manage Users</h2>
+        <h2 className="text-lg font-semibold text-white">Manage Securities</h2>
       </div>
 
       <div className="space-y-6">

@@ -226,7 +226,7 @@ export function SecurityVerificationPage() {
               type="button"
               disabled={scanning}
               onClick={() => setCameraOpen(true)}
-              className="rounded-full border border-teal-600 bg-teal-600 px-5 py-2.5 font-medium text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full border border-blue-600 bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Open camera to scan student ID barcode or QR code"
             >
               Scan ID
@@ -257,7 +257,7 @@ export function SecurityVerificationPage() {
                 }
                 formRef.current?.requestSubmit();
               }}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-gray-600 transition hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-gray-600 transition hover:bg-gray-200 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <ScanIcon className="h-5 w-5 shrink-0" aria-hidden />
             </button>

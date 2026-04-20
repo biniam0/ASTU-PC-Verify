@@ -205,7 +205,7 @@ export function ManageStudentsPage() {
                         {student.gender}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
-                        {student.laptopStatus || 'Not Registered'}
+                        {student.laptopStatus ?? 'Not Registered'}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-1">

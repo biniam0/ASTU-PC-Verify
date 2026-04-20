@@ -107,9 +107,9 @@ export function ReportsPage() {
             key={value}
             type="button"
             onClick={() => setTab(value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition $${
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
               tab === value
-                ? " bg-teal-600 text-white"
+                ? " bg-blue-600 text-white"
                 : " bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
           >

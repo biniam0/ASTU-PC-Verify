@@ -8,6 +8,7 @@ interface BackendStudent {
   year_of_entry: number | string | null
   gender?: string | null
   department?: string | null
+  laptop_status?: string | null
 }
 
 function mapStudent(row: BackendStudent): Student {
@@ -18,6 +19,7 @@ function mapStudent(row: BackendStudent): Student {
     yearOfEntry: row.year_of_entry != null ? String(row.year_of_entry) : '',
     gender: row.gender ?? '',
     department: row.department ?? '',
+    laptopStatus: row.laptop_status ?? undefined,
   }
 }
 

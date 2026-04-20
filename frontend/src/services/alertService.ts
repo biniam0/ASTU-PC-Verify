@@ -46,7 +46,7 @@ function mapAlertRow(row: any): AlertItem {
     studentId:
       row.student_id != null
         ? String(row.student_id)
-        : row.studentId ?? row.student_identifier ?? null,
+        : (row.studentId ?? row.student_identifier ?? null),
     createdAt: row.created_at ?? row.createdAt ?? new Date().toISOString(),
     resolvedAt: row.resolved_at ?? row.resolvedAt ?? null,
     message: row.message ?? row.description ?? null,
@@ -118,11 +118,8 @@ export async function addAlertNote(
   alertId: string,
   note: string,
 ): Promise<void> {
-  await apiRequest(
-    `/alerts/${encodeURIComponent(alertId)}/notes`,
-    {
-      method: "POST",
-      body: JSON.stringify({ note }),
-    },
-  );
+  await apiRequest(`/alerts/${encodeURIComponent(alertId)}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ note }),
+  });
 }

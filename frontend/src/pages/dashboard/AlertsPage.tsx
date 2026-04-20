@@ -18,7 +18,12 @@ interface AlertSummaryStats {
 
 function BellIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -149,9 +154,7 @@ export function AlertsPage() {
       );
       setRefreshToken((x) => x + 1);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to resolve alert",
-      );
+      setError(err instanceof Error ? err.message : "Failed to resolve alert");
     } finally {
       setActionLoadingId(null);
     }
@@ -187,9 +190,7 @@ export function AlertsPage() {
 
       <div className="space-y-6">
         <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Filter alerts
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900">Filter alerts</h3>
           <form
             onSubmit={handleApplyFilters}
             className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-5"
@@ -263,7 +264,7 @@ export function AlertsPage() {
             <div className="md:col-span-5 flex items-center gap-2 pt-1">
               <button
                 type="submit"
-                className="inline-flex items-center rounded bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                className="inline-flex items-center rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Apply filters
               </button>
@@ -302,9 +303,7 @@ export function AlertsPage() {
 
         <section className="rounded-lg border border-gray-200 bg-white p-0 shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-            <h3 className="text-sm font-semibold text-gray-900">
-              Alerts list
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-900">Alerts list</h3>
             {loading && (
               <p className="text-xs text-gray-500">Loading alerts…</p>
             )}
@@ -345,9 +344,7 @@ export function AlertsPage() {
                       <td className="px-4 py-2 text-gray-900">
                         {new Date(alert.createdAt).toLocaleString()}
                       </td>
-                      <td className="px-4 py-2 text-gray-900">
-                        {alert.type}
-                      </td>
+                      <td className="px-4 py-2 text-gray-900">{alert.type}</td>
                       <td className="px-4 py-2 text-gray-900">
                         {alert.status === "active" ? (
                           <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">

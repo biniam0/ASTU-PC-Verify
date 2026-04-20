@@ -24,7 +24,7 @@ const navItems = [
   },
   {
     to: "/manage-users",
-    label: "Manage Users",
+    label: "Manage Securities",
     icon: PeopleIcon,
     roles: ["admin"],
   },
@@ -395,7 +395,7 @@ export function DashboardLayout() {
 
       {/* Footer */}
       <footer className="shrink-0 border-t border-gray-200 bg-white py-3 text-center text-sm text-gray-500">
-        Copyright © 2021 Winner Systems. All rights reserved.
+        Copyright © 2021 CSEC ASTU. All rights reserved.
       </footer>
     </div>
   );
